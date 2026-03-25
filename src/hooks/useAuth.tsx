@@ -70,12 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: { data: { full_name: fullName } },
     });
-    if (!error && data.user) {
-      // Set client role for self-signup
-      await supabase.from("user_roles").insert({ user_id: data.user.id, role: "client" as AppRole });
-      if (company) {
-        await supabase.from("profiles").update({ company }).eq("user_id", data.user.id);
-      }
+    if (!error && data.user && company) {
+      // Role is auto-assigned via database trigger; just update company if provided
+      await supabase.from("profiles").update({ company }).eq("user_id", data.user.id);
     }
     return { error: error as Error | null };
   };
