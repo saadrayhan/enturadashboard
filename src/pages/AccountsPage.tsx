@@ -1,30 +1,21 @@
 import { useState } from "react";
 import { accounts as initialAccounts, industryStyles, Account } from "@/data/mock-data";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Upload, Search, SlidersHorizontal, ExternalLink, X } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus, Upload, Search, Building2, Clock, DollarSign, UsersIcon, Landmark, ExternalLink, X } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-
-const allColumns = [
-  { key: "industry", label: "Industry" },
-  { key: "lastInteraction", label: "Last interaction" },
-  { key: "revenue", label: "Revenue" },
-  { key: "headcount", label: "Headcount" },
-  { key: "lastFunding", label: "Last funding" },
-  { key: "linkedin", label: "LinkedIn" },
-] as const;
+import { PageTopbar } from "@/components/PageTopbar";
+import { FilterBar } from "@/components/FilterBar";
+import { DetailPanel } from "@/components/DetailPanel";
 
 export default function AccountsPage() {
   const [search, setSearch] = useState("");
   const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
   const [createOpen, setCreateOpen] = useState(false);
-  const [visibleCols, setVisibleCols] = useState<Set<string>>(new Set(allColumns.map(c => c.key)));
+  const [selected, setSelected] = useState<Account | null>(null);
   const [newAccount, setNewAccount] = useState({ name: "", industry: "", revenue: "", headcount: "", lastFunding: "", linkedin: "" });
 
   const filtered = accounts.filter((a) =>
@@ -50,151 +41,158 @@ export default function AccountsPage() {
     toast.success(`${account.name} created`);
   };
 
-  const toggleCol = (key: string) => {
-    setVisibleCols(prev => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  };
-
   return (
-    <div className="p-4 sm:p-6 space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-foreground">Accounts</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{accounts.length} accounts</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => toast.info("CSV import coming soon")}>
-            <Upload className="h-4 w-4 mr-1.5" />
-            <span className="hidden sm:inline">Import CSV</span>
-          </Button>
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4 mr-1.5" />
-            <span className="hidden sm:inline">Create account</span>
-          </Button>
-        </div>
-      </div>
+    <div className="flex flex-col h-full">
+      <PageTopbar
+        icon={Building2}
+        title="Accounts"
+        actions={[
+          { label: "Import CSV", icon: Upload, onClick: () => toast.info("CSV import coming soon"), variant: "outline" },
+          { label: "Create account", icon: Plus, onClick: () => setCreateOpen(true), variant: "default" },
+        ]}
+      />
+      <FilterBar />
 
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search accounts..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" />
-          {search && (
-            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm">
-              <SlidersHorizontal className="h-4 w-4 mr-1.5" />
-              Display
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-48 p-3" align="end">
-            <p className="text-xs font-medium text-muted-foreground mb-2">Visible columns</p>
-            <div className="space-y-2">
-              {allColumns.map(col => (
-                <label key={col.key} className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox checked={visibleCols.has(col.key)} onCheckedChange={() => toggleCol(col.key)} />
-                  <span className="text-sm text-foreground">{col.label}</span>
-                </label>
-              ))}
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Search */}
+          <div className="px-4 py-3 shrink-0">
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input placeholder="Search accounts..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-8 text-sm" />
+              {search && (
+                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
-          </PopoverContent>
-        </Popover>
+          </div>
+
+          {/* Table */}
+          <div className="flex-1 overflow-auto px-4 pb-4">
+            <div className="rounded-lg border border-border bg-card overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead><div className="flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" />Account</div></TableHead>
+                    <TableHead><div className="flex items-center gap-1.5"><Landmark className="h-3.5 w-3.5" />Industry</div></TableHead>
+                    <TableHead className="hidden md:table-cell"><div className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" />Last interaction</div></TableHead>
+                    <TableHead><div className="flex items-center gap-1.5"><DollarSign className="h-3.5 w-3.5" />Revenue</div></TableHead>
+                    <TableHead className="hidden lg:table-cell"><div className="flex items-center gap-1.5"><UsersIcon className="h-3.5 w-3.5" />Headcount</div></TableHead>
+                    <TableHead className="hidden lg:table-cell">Last funding</TableHead>
+                    <TableHead><div className="flex items-center gap-1.5"><ExternalLink className="h-3.5 w-3.5" />LinkedIn</div></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.length === 0 ? (
+                    <TableRow><TableCell colSpan={7} className="text-center text-sm text-muted-foreground py-8">No accounts found</TableCell></TableRow>
+                  ) : filtered.map((account) => {
+                    const style = industryStyles[account.industry] || { bg: "bg-muted", text: "text-muted-foreground" };
+                    return (
+                      <TableRow
+                        key={account.id}
+                        className={`cursor-pointer transition-colors ${selected?.id === account.id ? "bg-primary/5" : ""}`}
+                        onClick={() => setSelected(account)}
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground shrink-0">
+                              {account.logo}
+                            </div>
+                            <span className="font-medium text-foreground text-sm">{account.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${style.bg} ${style.text}`}>
+                            {account.industry}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground hidden md:table-cell font-mono">{account.lastInteraction}</TableCell>
+                        <TableCell className="text-sm text-foreground font-medium font-mono">{account.revenue}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground hidden lg:table-cell font-mono">{account.headcount.toLocaleString()}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground hidden lg:table-cell">{account.lastFunding}</TableCell>
+                        <TableCell>
+                          <a href={`https://linkedin.com/company/${account.linkedin}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors" onClick={(e) => e.stopPropagation()}>
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+              {/* Record count */}
+              <div className="px-4 py-2 border-t border-border">
+                <span className="text-xs text-muted-foreground font-mono">{filtered.length} accounts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Detail Panel */}
+        {selected && (
+          <DetailPanel
+            title={selected.name}
+            subtitle={selected.industry}
+            avatar={selected.logo}
+            onClose={() => setSelected(null)}
+            fields={[
+              { label: "Industry", value: selected.industry },
+              { label: "Revenue", value: selected.revenue, mono: true },
+              { label: "Headcount", value: selected.headcount.toLocaleString(), mono: true },
+              { label: "Last funding", value: selected.lastFunding },
+              { label: "Last interaction", value: selected.lastInteraction, mono: true },
+              { label: "LinkedIn", value: (
+                <a href={`https://linkedin.com/company/${selected.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">
+                  linkedin.com/company/{selected.linkedin}
+                </a>
+              )},
+            ]}
+          />
+        )}
       </div>
 
-      <div className="rounded-lg border border-border bg-card overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="text-xs font-medium text-muted-foreground">Account</TableHead>
-              {visibleCols.has("industry") && <TableHead className="text-xs font-medium text-muted-foreground">Industry</TableHead>}
-              {visibleCols.has("lastInteraction") && <TableHead className="text-xs font-medium text-muted-foreground hidden md:table-cell">Last interaction</TableHead>}
-              {visibleCols.has("revenue") && <TableHead className="text-xs font-medium text-muted-foreground">Revenue</TableHead>}
-              {visibleCols.has("headcount") && <TableHead className="text-xs font-medium text-muted-foreground hidden lg:table-cell">Headcount</TableHead>}
-              {visibleCols.has("lastFunding") && <TableHead className="text-xs font-medium text-muted-foreground hidden lg:table-cell">Last funding</TableHead>}
-              {visibleCols.has("linkedin") && <TableHead className="text-xs font-medium text-muted-foreground">LinkedIn</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-sm text-muted-foreground py-8">No accounts found</TableCell></TableRow>
-            ) : filtered.map((account) => {
-              const style = industryStyles[account.industry] || { bg: "bg-muted", text: "text-muted-foreground" };
-              return (
-                <TableRow key={account.id} className="cursor-pointer group transition-colors">
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-sm font-semibold text-muted-foreground shrink-0">
-                        {account.logo}
-                      </div>
-                      <span className="font-medium text-foreground">{account.name}</span>
-                    </div>
-                  </TableCell>
-                  {visibleCols.has("industry") && (
-                    <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${style.bg} ${style.text}`}>
-                        {account.industry}
-                      </span>
-                    </TableCell>
-                  )}
-                  {visibleCols.has("lastInteraction") && <TableCell className="text-sm text-muted-foreground hidden md:table-cell">{account.lastInteraction}</TableCell>}
-                  {visibleCols.has("revenue") && <TableCell className="text-sm text-foreground font-medium">{account.revenue}</TableCell>}
-                  {visibleCols.has("headcount") && <TableCell className="text-sm text-muted-foreground hidden lg:table-cell">{account.headcount.toLocaleString()}</TableCell>}
-                  {visibleCols.has("lastFunding") && <TableCell className="text-sm text-muted-foreground hidden lg:table-cell">{account.lastFunding}</TableCell>}
-                  {visibleCols.has("linkedin") && (
-                    <TableCell>
-                      <a href={`https://linkedin.com/company/${account.linkedin}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-                    </TableCell>
-                  )}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
-
+      {/* Create dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Create account</DialogTitle></DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <Label>Account name *</Label>
-              <Input placeholder="e.g. Acme Corp" value={newAccount.name} onChange={e => setNewAccount(p => ({ ...p, name: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label>Industry</Label>
-              <Select value={newAccount.industry} onValueChange={v => setNewAccount(p => ({ ...p, industry: v }))}>
-                <SelectTrigger><SelectValue placeholder="Select industry" /></SelectTrigger>
-                <SelectContent>
-                  {["Technology", "Finance", "Healthcare", "Energy", "Retail"].map(i => (
-                    <SelectItem key={i} value={i}>{i}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Revenue</Label>
-                <Input placeholder="e.g. $10M" value={newAccount.revenue} onChange={e => setNewAccount(p => ({ ...p, revenue: e.target.value }))} />
+          <div className="space-y-4">
+            <input
+              placeholder="Account name"
+              value={newAccount.name}
+              onChange={e => setNewAccount(p => ({ ...p, name: e.target.value }))}
+              className="w-full text-lg font-medium border-0 bg-transparent outline-none placeholder:text-muted-foreground"
+              autoFocus
+            />
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Industry</Label>
+                <Select value={newAccount.industry} onValueChange={v => setNewAccount(p => ({ ...p, industry: v }))}>
+                  <SelectTrigger className="h-8"><SelectValue placeholder="Select industry" /></SelectTrigger>
+                  <SelectContent>
+                    {["Technology", "Finance", "Healthcare", "Energy", "Retail"].map(i => (
+                      <SelectItem key={i} value={i}>{i}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Headcount</Label>
-                <Input type="number" placeholder="e.g. 500" value={newAccount.headcount} onChange={e => setNewAccount(p => ({ ...p, headcount: e.target.value }))} />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Revenue</Label>
+                  <Input placeholder="e.g. $10M" value={newAccount.revenue} onChange={e => setNewAccount(p => ({ ...p, revenue: e.target.value }))} className="h-8" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Headcount</Label>
+                  <Input type="number" placeholder="e.g. 500" value={newAccount.headcount} onChange={e => setNewAccount(p => ({ ...p, headcount: e.target.value }))} className="h-8" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Last funding</Label>
+                <Input placeholder="e.g. Series A — $20M" value={newAccount.lastFunding} onChange={e => setNewAccount(p => ({ ...p, lastFunding: e.target.value }))} className="h-8" />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Last funding</Label>
-              <Input placeholder="e.g. Series A — $20M" value={newAccount.lastFunding} onChange={e => setNewAccount(p => ({ ...p, lastFunding: e.target.value }))} />
-            </div>
-            <Button className="w-full" onClick={handleCreate}>Create account</Button>
+            <button onClick={handleCreate} className="w-full rounded-md bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 transition-colors">
+              Create account
+            </button>
           </div>
         </DialogContent>
       </Dialog>

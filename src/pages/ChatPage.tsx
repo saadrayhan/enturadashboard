@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Sparkles, Bot, User } from "lucide-react";
 import type { ChatMessage } from "@/data/mock-data";
@@ -57,16 +56,16 @@ export default function ChatPage() {
       <div ref={scrollRef} className="flex-1 overflow-auto p-4 sm:p-6">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-4">
-              <Sparkles className="h-6 w-6 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 mb-4">
+              <Sparkles className="h-5 w-5 text-primary" />
             </div>
-            <h2 className="text-xl font-semibold text-foreground mb-2">Ask Zentura</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-1">Ask Zentura</h2>
             <p className="text-sm text-muted-foreground mb-8 max-w-md">
-              I can help you with pipeline analysis, follow-up suggestions, email drafts, and more.
+              Pipeline analysis, follow-up suggestions, email drafts, and more.
             </p>
             <div className="flex flex-wrap gap-2 justify-center max-w-lg">
               {suggestions.map((s) => (
-                <button key={s} onClick={() => sendMessage(s)} className="rounded-full border border-border bg-card px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+                <button key={s} onClick={() => sendMessage(s)} className="rounded-full border border-border bg-card px-3.5 py-2 text-sm text-foreground hover:bg-accent transition-colors">
                   {s}
                 </button>
               ))}
@@ -81,7 +80,7 @@ export default function ChatPage() {
                     <Bot className="h-4 w-4 text-primary" />
                   </div>
                 )}
-                <div className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground"}`}>
+                <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-card border border-border text-foreground"}`}>
                   {msg.content}
                 </div>
                 {msg.role === "user" && (
@@ -96,7 +95,7 @@ export default function ChatPage() {
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
                   <Bot className="h-4 w-4 text-primary" />
                 </div>
-                <div className="bg-card border border-border rounded-2xl px-4 py-3">
+                <div className="bg-card border border-border rounded-2xl px-4 py-2.5">
                   <div className="flex gap-1">
                     <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                     <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -111,17 +110,20 @@ export default function ChatPage() {
 
       <div className="border-t border-border p-3 sm:p-4">
         <div className="max-w-2xl mx-auto flex items-center gap-2">
-          <Input
-            placeholder="Ask Zentura anything..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
-            className="flex-1"
-            disabled={isTyping}
-          />
-          <Button size="icon" onClick={() => sendMessage(input)} disabled={!input.trim() || isTyping}>
+          <div className="flex items-center gap-2 flex-1 rounded-lg border border-border bg-card px-3">
+            <Sparkles className="h-4 w-4 text-primary shrink-0" />
+            <Input
+              placeholder="Ask Zentura anything..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
+              className="border-0 shadow-none focus-visible:ring-0 px-0"
+              disabled={isTyping}
+            />
+          </div>
+          <button onClick={() => sendMessage(input)} disabled={!input.trim() || isTyping} className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-30 transition-colors">
             <Send className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
       </div>
     </div>
