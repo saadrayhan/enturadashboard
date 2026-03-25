@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Building2, Users, Target, CheckSquare, Calendar, StickyNote, MessageSquarePlus, Search, Bell } from "lucide-react";
+import { Building2, Users, Target, CheckSquare, Calendar, StickyNote, MessageSquarePlus, Search, Bell, ChevronLeft } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -20,6 +20,13 @@ const resourceItems = [
   { title: "Meetings", url: "/meetings", icon: Calendar },
   { title: "Notes", url: "/notes", icon: StickyNote },
 ];
+
+const recentChats = [
+  { id: "1", title: "Stripe deal analysis" },
+  { id: "2", title: "Q2 pipeline review" },
+  { id: "3", title: "Follow-up strategy" },
+];
+
 const allNavItems = [...recordItems, ...resourceItems, { title: "Chat", url: "/chat", icon: MessageSquarePlus }];
 
 export function AppSidebar() {
@@ -38,52 +45,56 @@ export function AppSidebar() {
   return (
     <>
       <Sidebar collapsible="icon">
-        <SidebarHeader className="p-4">
+        {/* User row at TOP */}
+        <SidebarHeader className="p-3 pb-0">
           {!collapsed ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/accounts")}>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">Z</div>
-                <span className="text-lg font-semibold tracking-tight text-foreground">Zentura</span>
+            <div className="flex items-center gap-3 rounded-lg px-2 py-2 cursor-pointer hover:bg-accent transition-colors">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-medium">AM</div>
+              <div className="flex min-w-0 flex-col flex-1">
+                <span className="truncate text-sm font-medium text-foreground">Alex Morgan</span>
+                <span className="truncate text-[11px] text-muted-foreground">alex@zentura.io</span>
               </div>
-              <div className="flex items-center gap-1">
-                <button onClick={() => setSearchOpen(true)} className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
-                  <Search className="h-4 w-4" />
-                </button>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button className="relative rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
-                      <Bell className="h-4 w-4" />
-                      <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-destructive" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-72 p-0" align="end">
-                    <div className="p-3 border-b border-border">
-                      <p className="text-sm font-medium text-foreground">Notifications</p>
-                    </div>
-                    <div className="p-3 space-y-2">
-                      <div className="p-2 rounded-md hover:bg-accent cursor-pointer transition-colors">
-                        <p className="text-sm text-foreground">Shopify proposal due today</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">2 hours ago</p>
-                      </div>
-                      <div className="p-2 rounded-md hover:bg-accent cursor-pointer transition-colors">
-                        <p className="text-sm text-foreground">New contact added: Robert Chang</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Yesterday</p>
-                      </div>
-                      <div className="p-2 rounded-md hover:bg-accent cursor-pointer transition-colors">
-                        <p className="text-sm text-foreground">Stripe deal moved to Won</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">2 days ago</p>
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
+              <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             </div>
           ) : (
-            <div className="flex items-center justify-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold cursor-pointer" onClick={() => navigate("/accounts")}>Z</div>
+            <div className="flex items-center justify-center py-1">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-medium cursor-pointer">AM</div>
             </div>
           )}
         </SidebarHeader>
+
+        {/* Search + notifications */}
+        {!collapsed && (
+          <div className="px-3 pt-3 pb-1 flex items-center gap-1">
+            <button onClick={() => setSearchOpen(true)} className="flex-1 flex items-center gap-2 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent transition-colors">
+              <Search className="h-3.5 w-3.5" />
+              <span>Search...</span>
+            </button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="relative rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+                  <Bell className="h-4 w-4" />
+                  <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-destructive" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72 p-0" align="end">
+                <div className="p-3 border-b border-border">
+                  <p className="text-sm font-medium text-foreground">Notifications</p>
+                </div>
+                <div className="p-3 space-y-2">
+                  <div className="p-2 rounded-md hover:bg-accent cursor-pointer transition-colors">
+                    <p className="text-sm text-foreground">Shopify proposal due today</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 font-mono">2h ago</p>
+                  </div>
+                  <div className="p-2 rounded-md hover:bg-accent cursor-pointer transition-colors">
+                    <p className="text-sm text-foreground">New contact: Robert Chang</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 font-mono">1d ago</p>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
 
         <SidebarContent>
           <SidebarGroup>
@@ -127,10 +138,19 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={isActive("/chat")} tooltip="New Chat">
                     <NavLink to="/chat" className="hover:bg-transparent" activeClassName="bg-transparent">
-                      <MessageSquarePlus className="h-4 w-4" />{!collapsed && <span>New chat</span>}
+                      <MessageSquarePlus className="h-4 w-4" />{!collapsed && <span className="text-primary font-medium">+ New chat</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                {!collapsed && recentChats.map((chat) => (
+                  <SidebarMenuItem key={chat.id}>
+                    <SidebarMenuButton asChild tooltip={chat.title}>
+                      <button onClick={() => navigate("/chat")} className="w-full text-left flex items-center gap-2 hover:bg-transparent">
+                        <span className="text-sm text-muted-foreground truncate">{chat.title}</span>
+                      </button>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -138,16 +158,13 @@ export function AppSidebar() {
 
         <SidebarFooter className="p-3">
           {!collapsed ? (
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-2.5 cursor-pointer hover:bg-accent transition-colors">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">AM</div>
-              <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-medium text-foreground">Alex Morgan</span>
-                <span className="truncate text-xs text-muted-foreground">alex@zentura.io</span>
-              </div>
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/accounts")}>
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-foreground text-background text-xs font-bold">Z</div>
+              <span className="text-sm font-semibold tracking-tight text-foreground">Zentura</span>
             </div>
           ) : (
             <div className="flex items-center justify-center">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium cursor-pointer">AM</div>
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-foreground text-background text-xs font-bold cursor-pointer" onClick={() => navigate("/accounts")}>Z</div>
             </div>
           )}
         </SidebarFooter>
